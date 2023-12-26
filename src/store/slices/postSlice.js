@@ -6,16 +6,20 @@ const initialState = {
     isLoading: false,
     isError: "",
     path: "",
+    postStatus: 'pending',
 };
 
 const postSlice = createSlice({
     initialState,
     name: 'posts',
     reducers: {
-
         setPath: (state, action) => {
             state.path = action.payload;
         },
+        setPost: (state, action) => {
+            state.cart = action.payload;
+        }
+
     },
     extraReducers: (builder) => {
 
@@ -23,15 +27,20 @@ const postSlice = createSlice({
             state.isError = "";
             state.isLoading = false;
             state.posts = action.payload;
+            console.log(state.postStatus);
+            state.postStatus = 'fulfilled'; 
+
         });
         builder.addCase(fetchAllPosts.pending, (state, action) => {
             state.isError = "";
             state.isLoading = true;
+            state.postStatus = 'pending';
             state.posts = [];
         });
         builder.addCase(fetchAllPosts.rejected, (state, action) => {
             state.isError = "error";
             state.isLoading = false;
+            state.postStatus = 'rejected';
             state.posts = [];
         })
     },
@@ -39,6 +48,6 @@ const postSlice = createSlice({
 
 const postsReducers = postSlice.reducer;
 
-export const { setPosts, setLoading, setError, setPath } = postSlice.actions;
+export const { setPath, setPost } = postSlice.actions;
 
 export default postsReducers;

@@ -1,71 +1,81 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { useLocation } from 'react-router-dom';
 import { setHistory, setCurrent } from '../../store/slices/historySlice';
+import Spinner from '../Spinner/Spinner';
+import { fetchAllPosts } from '../../store/creators/postCreator';
+
 const Post = () => {
-    const [posts, setPosts] = useState([]);
     const { history, current } = useSelector(state => state.history);
-    const dispatch = useDispatch()
-    console.log(current);
+    const { posts: { postStatus, isError, posts } } = useSelector(state => state); // Adjust as per your state structure
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        fetch(`https://jsonplaceholder.typicode.com/posts`)
-            .then(res => res.json())
-            .then(data => setPosts(data))
-            .catch(error => console.error('Error fetching posts:', error));
-        console.log(current);
-
-
-    }, []);
-
+        dispatch(fetchAllPosts());
+    }, [dispatch]);
 
     useEffect(() => {
+        const handleRouteChange = () => {
+            const currentPath = window.location.pathname;
+            dispatch(setCurrent(currentPath));
+        };
 
-        const prevPath = window.location.pathname;
+        handleRouteChange();
+
+        window.addEventListener('popstate', handleRouteChange);
 
         return () => {
-            const currentPath = window.location.pathname;
-            if (prevPath !== currentPath) {
-                dispatch(setCurrent('Post'))
-                console.log('change!');
-
-            }
+            window.removeEventListener('popstate', handleRouteChange);
         };
-    }, []);
+    }, [dispatch]);
 
-
-
-    function GetShortValue(word, id) {
+    const getShortValue = (word, id) => {
         if (word.length > 20) {
             return (
                 <>
-                    {word.substr(0, 20)}{' '}
-                    <Link to={`/posts/${id}`}>More...</Link>
+                    {word.substr(0, 20)} <Link to={`/posts/${id}`}>More...</Link>
                 </>
             );
         } else {
             return word;
         }
-    }
+    };
+
+    const renderItem = (item) => {
+        if (!item) {
+            return null;
+        }
+
+        const { id, title, body } = item;
+
+        return (
+            <div className="post" key={id}>
+                <strong>{id}</strong>
+                <h1>{title}</h1>
+                <p>{getShortValue(body, id)}</p>
+                <Link to={`/posts/${id}`}>
+                    <button>Details</button>
+                </Link>
+            </div>
+        );
+    };
 
     return (
-        <div className='posts'>
-            {<h1>From: {current}</h1>}
-            {
-                posts.length !== 0 ? posts.map(item => (
-                    <div className='post' key={item.id}>
-                        <strong>{item.id}</strong>
-                        <h1>{item.title}</h1>
-                        <p>{GetShortValue(item.body, item.id)}</p>
-                        <Link to={`/posts/${item.id}`}>
-                            <button>Details</button>
-                        </Link>
-                    </div>
-                )) : <p>Loading posts...</p>
-            }
-        </div>
+        <>
+            {postStatus === 'fulfilled' && posts.length > 0 ? (
+                <div className="posts">
+                    <h1>From: {current}</h1>
+                    {posts.map(renderItem)}
+                </div>
+            ) : (
+                <p>No posts available</p>
+            )}
+            {postStatus === 'pending' && <Spinner />}
+            {postStatus === 'rejected' && (
+                <div style={{ textAlign: 'center' }}>{isError}</div>
+            )}
+        </>
     );
-}
+};
 
 export default Post;
