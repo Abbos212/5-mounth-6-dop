@@ -1,18 +1,19 @@
-import { BrowserRouter as Router, Routes, Route} from 'react-router-dom';
-import { Main , PostDetails} from './pages';
-
-
-
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Main, Post, PostDetails } from './pages';
+import Header from './pages/Header/Header';
 
 
 function App() {
   return (
-      <Router>
-        <Routes>
-          <Route path='/' element={<Main/>}/>
-          <Route path='/posts/:id' element={<PostDetails/>}/>
-        </Routes>
-      </Router>
+    <Router>
+      <Routes>
+        <Route element={<Header />}>
+          <Route path='/' element={<Main />} />
+          <Route path='/posts/' element={<Post />} />
+          <Route path='/posts/:id' element={<PostDetails />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 

@@ -1,46 +1,34 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-
+import React, { useEffect } from 'react';
+import { setCurrent, setHistory } from '../../store/slices/historySlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 const Main = () => {
-    const [posts, setPost] = useState([])
+    const dispatch = useDispatch()
+    const { current, history } = useSelector((state) => state.history)
+
+    const location = useLocation();
+
+ 
+
 
     useEffect(() => {
-        fetch(`https://jsonplaceholder.typicode.com/posts`).then((res) => {
-            return res.json()
+        
+        const prevPath = window.location.pathname;
 
-        }).then((data) => {
-    
-            
-
-            setPost(data)
-        })
-    }, [])
-
-function Getshortvalue(word, id){
-    if(word.length>20){
-        return (<>{word.substr(0,20)}+''+<Link to={'/posts/'+id}>More...</Link></>)
-    }else{
-        return word
-    }
-    }
-   
-    return (
-        <div className='posts'>
-            {
-                posts.length !==0 ? posts.map((item) => {
-                    return (
-                        <div className='post'>
-                            <strong>{item.id}</strong>
-                            <h1>{item.title}</h1>
-                            <p>{Getshortvalue(item.body, item.id)}</p>
-                            <Link to={'/posts/'+item.id}><button>details</button></Link>    
-                        </div>
-                    )
-                }): ''
-
-                
+        return () => {
+            const currentPath = window.location.pathname;
+            if (prevPath !== currentPath) {
+                dispatch(setCurrent('Main'))
+                console.log(current);
+                console.log('change!');
             }
-            
+        };
+    }, []);
+    return (
+        <div>
+            <h1>Main</h1>
+            <p>From: {current}</p>
         </div>
     );
 }
